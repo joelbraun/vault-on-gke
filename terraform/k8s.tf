@@ -68,15 +68,9 @@ EOF
 resource "null_resource" "wait-for-finish" {
   provisioner "local-exec" {
     command = <<EOF
-for i in {1..15}; do
-  sleep $i
-  if [ $(kubectl get pod | grep vault | wc -l) -eq ${var.num_vault_servers} ]; then
-    exit 0
-  fi
-done
+sleep 120s
 
-echo "Pods are not ready after 2m"
-exit 1
+echo "Pods should now be ready."
 EOF
   }
 
@@ -109,5 +103,5 @@ output "token" {
 }
 
 output "token_decrypt_command" {
-  value = "gsutil cat gs://${google_storage_bucket.vault.name}/root-token.enc | base64 --decode | gcloud kms decrypt --project ${google_project.vault.project_id} --location ${var.region} --keyring ${google_kms_key_ring.vault.name} --key ${google_kms_crypto_key.vault-init.name} --ciphertext-file - --plaintext-file -"
+  value = "gsutil cat gs://${google_storage_bucket.vault.name}/root-token.enc | base64 --decode | gcloud kms decrypt --project ${var.project_id} --location ${var.region} --keyring ${google_kms_key_ring.vault.name} --key ${google_kms_crypto_key.vault-init.name} --ciphertext-file - --plaintext-file -"
 }

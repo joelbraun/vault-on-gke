@@ -8,17 +8,24 @@ variable "zone" {
   default = "us-east4-b"
 }
 
+variable "project_id" {
+  type    = "string"
+  default = "id-test-deploy-2"
+}
+
 variable "project" {
   type    = "string"
-  default = ""
+  default = "id-test-deploy-2"
 }
 
-variable "billing_account" {
-  type = "string"
+variable "kms_keyring_id" {
+  type    = "string"
+  default = "vault"
 }
 
-variable "org_id" {
-  type = "string"
+variable "kms_key_id" {
+  type    = "string"
+  default = "vault-init"
 }
 
 variable "instance_type" {
@@ -70,14 +77,10 @@ variable "kms_crypto_key_roles" {
 
 variable "kubernetes_version" {
   type    = "string"
-  default = "1.10.2-gke.3"
+  default = "1.10.5-gke.0"
 }
 
 variable "num_vault_servers" {
   type    = "string"
   default = "3"
-}
-
-variable "google_account_email" {
-  type = "string"
 }

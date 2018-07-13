@@ -6,24 +6,24 @@ provider "google" {
 }
 
 # Generate a random id for the project
-resource "random_id" "random" {
-  prefix      = "vault-"
-  byte_length = "8"
-}
+# resource "random_id" "random" {
+#   prefix      = "vault-"
+#   byte_length = "8"
+# }
 
 # Create the project
-resource "google_project" "vault" {
-  name            = "${random_id.random.hex}"
-  project_id      = "${random_id.random.hex}"
-  org_id          = "${var.org_id}"
-  billing_account = "${var.billing_account}"
-}
+# resource "google_project" "vault" {
+#   name            = "${random_id.random.hex}"
+#   project_id      = "${random_id.random.hex}"
+#   org_id          = "${var.org_id}"
+#   billing_account = "${var.billing_account}"
+# }
 
 # Create the vault service account
 resource "google_service_account" "vault-server" {
   account_id   = "vault-server"
   display_name = "Vault Server"
-  project      = "${google_project.vault.project_id}"
+  project      = "${var.project_id}"
 }
 
 # Create a service account key
@@ -34,7 +34,7 @@ resource "google_service_account_key" "vault" {
 # Add the service account to the project
 resource "google_project_iam_member" "service-account" {
   count   = "${length(var.service_account_iam_roles)}"
-  project = "${google_project.vault.project_id}"
+  project = "${var.project_id}"
   role    = "${element(var.service_account_iam_roles, count.index)}"
   member  = "serviceAccount:${google_service_account.vault-server.email}"
 }
@@ -42,7 +42,7 @@ resource "google_project_iam_member" "service-account" {
 # Enable required services on the project
 resource "google_project_service" "service" {
   count   = "${length(var.project_services)}"
-  project = "${google_project.vault.project_id}"
+  project = "${var.project_id}"
   service = "${element(var.project_services, count.index)}"
 
   # Do not disable the service on destroy. On destroy, we are going to
@@ -53,8 +53,8 @@ resource "google_project_service" "service" {
 
 # Create the storage bucket
 resource "google_storage_bucket" "vault" {
-  name          = "${google_project.vault.project_id}-vault-storage"
-  project       = "${google_project.vault.project_id}"
+  name          = "${var.project_id}-vault-storage"
+  project       = "${var.project_id}"
   force_destroy = true
   storage_class = "MULTI_REGIONAL"
 
@@ -77,7 +77,7 @@ resource "google_storage_bucket_iam_member" "vault-server" {
 resource "google_kms_key_ring" "vault" {
   name     = "vault"
   location = "${var.region}"
-  project  = "${google_project.vault.project_id}"
+  project  = "${var.project_id}"
 
   depends_on = ["google_project_service.service"]
 }
@@ -100,7 +100,7 @@ resource "google_kms_crypto_key_iam_member" "vault-init" {
 # Create the GKE cluster
 resource "google_container_cluster" "vault" {
   name    = "vault"
-  project = "${google_project.vault.project_id}"
+  project = "${var.project_id}"
   zone    = "${var.zone}"
 
   min_master_version = "${var.kubernetes_version}"
@@ -127,7 +127,7 @@ resource "google_container_cluster" "vault" {
 resource "google_compute_address" "vault" {
   name    = "vault-lb"
   region  = "${var.region}"
-  project = "${google_project.vault.project_id}"
+  project = "${var.project_id}"
 
   depends_on = ["google_project_service.service"]
 }
@@ -219,7 +219,7 @@ resource "tls_locally_signed_cert" "vault" {
 }
 
 output "project" {
-  value = "${google_project.vault.project_id}"
+  value = "${var.project_id}"
 }
 
 output "zone" {
