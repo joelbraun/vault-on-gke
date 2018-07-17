@@ -18,22 +18,15 @@ spec:
       containers:
       - name: identity
         image: gcr.io/id-test-deploy-2/identityserver:v2
+        ports:
+        - name: identity
+          containerPort: 8080
         readinessProbe:
           httpGet:
-            path: /healthz
-            port: 80
+            path: /
+            port: 8080
             scheme: HTTP
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 80
-            scheme: HTTP
-          initialDelaySeconds: 10
-          timeoutSeconds: 1
-        ports:
-        - containerPort: 8080
-          name: identity-port
-          protocol: TCP
+
 
 
 ---
