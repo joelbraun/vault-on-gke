@@ -1,0 +1,14 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: basic-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "identity-lb"
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  tls:
+  - secretName: tlssecret
+  backend:
+    serviceName: identity-svc
+    servicePort: identity-port
